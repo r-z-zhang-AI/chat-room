@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  password String
+  email    String? @unique
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // 关系
+  rooms    Room[]
+  messages Message[]
+  
+  @@map("users")
+}
+
+model Room {
+  id       Int    @id @default(autoincrement())
+  roomName String
+  creator  String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // 关系
+  user     User      @relation(fields: [creator], references: [username])
+  messages Message[]
+  
+  @@map("rooms")
+}
+
+model Message {
+  id      Int    @id @default(autoincrement())
+  content String
+  sender  String
+  roomId  Int
+  time    BigInt // 使用 BigInt 存储时间戳
+  
+  createdAt DateTime @default(now())
+  
+  // 关系
+  user User @relation(fields: [sender], references: [username])
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
+  @@map("messages")
+}

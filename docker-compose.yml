@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # Next.js 应用
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=file:./dev.db
+      - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+      - NEXTAUTH_SECRET=your-nextauth-secret-key
+      - NEXTAUTH_URL=http://localhost:3000
+    volumes:
+      - ./prisma:/app/prisma
+      - app_data:/app
+    depends_on:
+      - db-setup
+    command: sh -c "npx prisma db push && node server.js"
+
+  # 数据库初始化服务
+  db-setup:
+    build: .
+    volumes:
+      - ./prisma:/app/prisma
+      - app_data:/app
+    environment:
+      - DATABASE_URL=file:./dev.db
+    command: sh -c "npx prisma generate && npx prisma db push"
+
+volumes:
+  app_data:
